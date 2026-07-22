@@ -17,7 +17,6 @@ This repository contains the API responsible for the application's business rule
 - PostgreSQL
 - OpenAPI / Swagger
 - Lombok
-- Kotlin
 - Maven Wrapper
 - Cloudinary
 
