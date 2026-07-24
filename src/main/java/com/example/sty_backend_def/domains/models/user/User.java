@@ -24,7 +24,7 @@ import java.util.UUID;
 @Builder
 public class User implements UserDetails {
 
-    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    @Id
     @Column(name = "id", nullable = false)
     private UUID id;
 

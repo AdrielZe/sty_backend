@@ -16,6 +16,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.UUID;
+
 @Service
 public class AuthService {
 
@@ -29,12 +31,14 @@ public class AuthService {
 
 
     public AuthResponseDTO registerUser(RegisterRequestDto data) {
-        if (repository.findByName(data.login()) != null) throw new RuntimeException("User already registered");
+        if (repository.findByName(data.email()) != null) throw new RuntimeException("User already registered");
 
         String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
 
         User user = repository.save(User.builder()
-                .name(data.login())
+                .id(UUID.fromString(data.id()))
+                .name(data.name())
+                .email(data.email())
                 .password(encryptedPassword)
                 .userRole(data.role())
                 .build()

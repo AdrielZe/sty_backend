@@ -58,6 +58,41 @@ public class WorkoutService {
         }
     }
 
+    public List<WorkoutResponseDto> createWorkouts(List<WorkoutRequestDto> data) {
+        List<Workout> workouts = data.stream().map(workout -> {
+                    User userReference = userRepository.getReferenceById(workout.userId());
+
+                    Workout workoutToSave = Workout.builder()
+                            .id(workout.workoutId())
+                            .user(userReference)
+                            .name(workout.workoutName())
+                            .dayOfWeek(workout.dayOfWeek())
+                            .exerciseList(workout.exercises())
+                            .build();
+
+                    List<Exercise> exercises = workoutToSave.getExerciseList();
+
+                    if (!exercises.isEmpty()) {
+                        exercises.forEach(exercise -> exercise.setWorkout(workoutToSave));
+                    } else {
+                        throw new RuntimeException("exercises are null");
+                    }
+
+                    workoutToSave.setExerciseList(exercises);
+                    return workoutToSave;
+                }
+        ).toList();
+
+        workoutRepository.saveAll(workouts);
+        return workouts.stream().map(workout ->
+                WorkoutResponseDto.builder()
+                        .workoutId(workout.getId())
+                        .userId(workout.getUser().getId())
+                        .workoutName(workout.getName()).build()
+        ).toList();
+    }
+
+
     public WorkoutResponseDto getWorkout(UUID workoutId) {
         Workout workout = workoutRepository.findById(workoutId)
                 .orElseThrow(() -> new RuntimeException("Workout doesn't exist"));

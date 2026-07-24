@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -27,6 +28,10 @@ public class WorkoutController {
         return ResponseEntity.ok(service.createWorkout(data));
     }
 
+    @PostMapping("/sync")
+    ResponseEntity createWorkouts(@Valid @RequestBody List<WorkoutRequestDto> data) {
+        return ResponseEntity.ok(service.createWorkouts(data));
+    }
 
     // get single workout by id
     @GetMapping("/{id}")
