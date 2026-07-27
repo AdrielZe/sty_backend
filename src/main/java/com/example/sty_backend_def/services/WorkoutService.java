@@ -25,37 +25,34 @@ public class WorkoutService {
     }
 
     public String createWorkout(WorkoutRequestDto workout) {
-        System.out.println("request: " + workout);
         User userReference = userRepository.getReferenceById(workout.userId());
 
-        if (!workoutRepository.existsById(workout.workoutId())){
-            Workout workoutToSave = Workout.builder()
-                    .id(workout.workoutId())
-                    .name(workout.workoutName())
-                    .dayOfWeek(workout.dayOfWeek())
-                    .user(userReference)
-                    .build();
+        Workout workoutToSave = workoutRepository.findById(workout.workoutId())
+                .orElse(new Workout());
 
-            List<Exercise> exercises = workout.exercises();
+        workoutToSave.setId(workout.workoutId());
+        workoutToSave.setName(workout.workoutName());
+        workoutToSave.setDayOfWeek(workout.dayOfWeek());
+        workoutToSave.setUser(userReference);
 
-            if (exercises != null) {
-                exercises.forEach(exercise -> {
-                    exercise.setWorkout(workoutToSave);
-                });
-                workoutToSave.setExerciseList(exercises);
+        List<Exercise> newExercises = workout.exercises();
+
+        if (newExercises != null && !newExercises.isEmpty()) {
+            newExercises.forEach(exercise -> exercise.setWorkout(workoutToSave));
+
+            if (workoutToSave.getExerciseList() == null) {
+                workoutToSave.setExerciseList(newExercises);
             } else {
-                System.out.println("exercise is null");
+                workoutToSave.getExerciseList().clear();
+                workoutToSave.getExerciseList().addAll(newExercises);
             }
-
-            exercises.forEach( exercise -> {
-                System.out.println("EXERCISES: " + exercise);
-
-            });
-            workoutRepository.save(workoutToSave);
-            return workout.workoutName();
         } else {
-            throw new RuntimeException("Workout already saved");
+            System.out.println("exercises list is null or empty");
         }
+
+        workoutRepository.save(workoutToSave);
+
+        return workout.workoutName();
     }
 
     public List<WorkoutResponseDto> createWorkouts(List<WorkoutRequestDto> data) {
@@ -143,7 +140,14 @@ public class WorkoutService {
         } else {
             throw new RuntimeException("User doesn't have any workout for this day");
         }
+    }
 
+    public void deleteWorkout(UUID id) {
+        if (workoutRepository.existsById(id)) {
+            workoutRepository.deleteById(id);
+        } else {
+            System.out.println("Workout not found. It was already deleted.");
+        }
     }
 
 }
