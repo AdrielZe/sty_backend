@@ -1,8 +1,6 @@
 package com.example.sty_backend_def.controllers;
 
-import com.example.sty_backend_def.domains.models.user.EmailRequestDto;
-import com.example.sty_backend_def.domains.models.user.PictureResponseDto;
-import com.example.sty_backend_def.domains.models.user.UsernameRequestDto;
+import com.example.sty_backend_def.domains.models.user.*;
 import com.example.sty_backend_def.services.UserService;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.validation.Valid;
@@ -44,28 +42,31 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity getUser(@PathVariable("id") UUID id) {
-        return ResponseEntity.ok(service.getUser(id));
+    public ResponseEntity<UserProfileResponseDto> getUser(@PathVariable("id") UUID id) {
+        return ResponseEntity.ok(service.getUserProfile(id));
     }
 
     @GetMapping("/{id}/profile")
-    public ResponseEntity getUserProfile(@PathVariable("id") UUID id) {
+    public ResponseEntity<UserProfileResponseDto> getUserProfile(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(service.getUserProfile(id));
     }
 
     @PostMapping("/{id}/username")
-    public ResponseEntity updateUsername(@Valid @RequestBody UsernameRequestDto data) {
+    public ResponseEntity<UserProfileResponseDto> updateUsername(@Valid @RequestBody UsernameRequestDto data) {
         return ResponseEntity.ok(service.updateUsername(data));
     }
 
     @PostMapping("/{id}/email")
-    public ResponseEntity updateEmail(@Valid @RequestBody EmailRequestDto data) {
+    public ResponseEntity<UserProfileResponseDto> updateEmail(@Valid @RequestBody EmailRequestDto data) {
         return ResponseEntity.ok(service.updateEmail(data));
     }
 
     @PostMapping("{id}/weeklyGoal")
-    public ResponseEntity updateWeeklyGoal(@Valid @RequestBody @PathVariable("id") UUID id, Integer weeklyGoal) {
+    public ResponseEntity<UserProfileResponseDto> updateWeeklyGoal(@Valid @RequestBody @PathVariable("id") UUID id, Integer weeklyGoal) {
         return ResponseEntity.ok(service.updateWeeklyGoal(id, weeklyGoal));
     }
+
+//    @GetMapping("/{id}/weeklyGoal")
+//    public ResponseEntity
 
 }

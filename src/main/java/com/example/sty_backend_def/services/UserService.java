@@ -25,12 +25,12 @@ public class UserService {
     }
 
     public String getUserPicture(UUID userId) {
-        return getUser(userId).getProfilePicture();
+        return searchUser(userId).getProfilePicture();
     }
 
     @Transactional
     public String uploadUserPicture(UUID userId, MultipartFile file) throws IOException {
-        User user = getUser(userId);
+        User user = searchUser(userId);
         validateImageFile(file);
         deleteImageIfExisting(user);
 
@@ -53,49 +53,45 @@ public class UserService {
     }
 
     public UserProfileResponseDto getUserProfile(UUID id) {
-        User user = getUser(id);
+        User user = searchUser(id);
 
-        String picture = user.getProfilePicture();
-        String username = user.getUsername();
-
-        return UserProfileResponseDto.builder()
-                .picture(picture)
-                .username(username)
-                .build();
+        return toProfileDto(user);
     }
 
     @Transactional
-    public User updateUsername(UsernameRequestDto data) {
-        User user = getUser(data.userId());
+    public UserProfileResponseDto updateUsername(UsernameRequestDto data) {
+        User user = searchUser(data.userId());
 
         user.setName(data.username());
         repository.save(user);
 
-        return user;
+        return toProfileDto(user);
     }
 
     @Transactional
-    public User updateEmail(EmailRequestDto data) {
-        User user = getUser(data.userId());
+    public UserProfileResponseDto updateEmail(EmailRequestDto data) {
+        User user = searchUser(data.userId());
 
         user.setEmail(data.email());
 
         repository.save(user);
 
-        return user;
+        return toProfileDto(user);
     }
 
     @Transactional
-    public User updateWeeklyGoal(UUID userId, Integer weeklyGoal) {
-        User user = getUser(userId);
+    public UserProfileResponseDto updateWeeklyGoal(UUID userId, Integer weeklyGoal) {
+        User user = searchUser(userId);
 
         user.setWeeklyGoal(weeklyGoal);
 
-        return repository.save(user);
+        repository.save(user);
+
+        return toProfileDto(user);
     }
 
 
-    private User getUser(UUID id) {
+    private User searchUser(UUID id) {
         return repository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
     }
 
@@ -121,5 +117,13 @@ public class UserService {
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new IllegalArgumentException("File exceeds the max size of 5MB.");
         }
+    }
+
+    private UserProfileResponseDto toProfileDto(User user) {
+        return UserProfileResponseDto.builder()
+                .username(user.getUsername())
+                .weeklyGoal(user.getWeeklyGoal())
+                .picture(user.getProfilePicture())
+                .build();
     }
 }

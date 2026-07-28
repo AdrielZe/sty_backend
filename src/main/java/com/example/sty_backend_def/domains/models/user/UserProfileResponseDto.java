@@ -4,7 +4,8 @@ import lombok.Builder;
 
 @Builder
 public record UserProfileResponseDto(
-        String picture,
-        String username
+        String username,
+        Integer weeklyGoal,
+        String picture
 ) {
 }
