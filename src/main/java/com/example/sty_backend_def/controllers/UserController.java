@@ -4,6 +4,7 @@ import com.example.sty_backend_def.domains.models.user.EmailRequestDto;
 import com.example.sty_backend_def.domains.models.user.PictureResponseDto;
 import com.example.sty_backend_def.domains.models.user.UsernameRequestDto;
 import com.example.sty_backend_def.services.UserService;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.validation.Valid;
 import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +45,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity getUser(@PathVariable("id") UUID id) {
-        return ResponseEntity.ok(service.getUser(id).orElseThrow(() -> new RuntimeException("User doesn't exist")));
+        return ResponseEntity.ok(service.getUser(id));
     }
 
     @GetMapping("/{id}/profile")
@@ -60,6 +61,11 @@ public class UserController {
     @PostMapping("/{id}/email")
     public ResponseEntity updateEmail(@Valid @RequestBody EmailRequestDto data) {
         return ResponseEntity.ok(service.updateEmail(data));
+    }
+
+    @PostMapping("{id}/weeklyGoal")
+    public ResponseEntity updateWeeklyGoal(@Valid @RequestBody @PathVariable("id") UUID id, Integer weeklyGoal) {
+        return ResponseEntity.ok(service.updateWeeklyGoal(id, weeklyGoal));
     }
 
 }

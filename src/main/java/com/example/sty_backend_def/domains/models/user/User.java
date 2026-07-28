@@ -44,6 +44,9 @@ public class User implements UserDetails {
     @Column(name = "profile_picture")
     private String profilePicture;
 
+    @Column(name = "profile_picture_public_id")
+    private String profilePicturePublicId;
+
     @Column(name = "name_display")
     private String nameDisplay;
 
