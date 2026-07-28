@@ -22,32 +22,25 @@ public class UserController {
         this.service = service;
     }
 
-    // get user picture
     @GetMapping("/{id}/picture")
     public ResponseEntity<PictureResponseDto> getUserPicture(@PathVariable("id") UUID id) {
         String url = service.getUserPicture(id);
         return ResponseEntity.ok(new PictureResponseDto(url));
     }
 
-    // post user picture
-    @PostMapping("{id}/picture")
-    public ResponseEntity<String> postUserPicture(@PathVariable UUID id, @RequestParam("file") MultipartFile file) {
+    @PostMapping("/{id}/picture")
+    public ResponseEntity<PictureResponseDto> postUserPicture(@PathVariable UUID id, @RequestParam("file") MultipartFile file) {
         try {
-            String imageUrl = service.uploadUserPicture(id, file);
+            PictureResponseDto imageUrl = service.uploadUserPicture(id, file);
             return ResponseEntity.ok(imageUrl);
         } catch (IOException e) {
-            return ResponseEntity.internalServerError().body("Error ao processar imagem");
+            return ResponseEntity.internalServerError().body(new PictureResponseDto("failure"));
         }
 
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserProfileResponseDto> getUser(@PathVariable("id") UUID id) {
-        return ResponseEntity.ok(service.getUserProfile(id));
-    }
-
-    @GetMapping("/{id}/profile")
-    public ResponseEntity<UserProfileResponseDto> getUserProfile(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(service.getUserProfile(id));
     }
 
@@ -61,12 +54,11 @@ public class UserController {
         return ResponseEntity.ok(service.updateEmail(data));
     }
 
-    @PostMapping("{id}/weeklyGoal")
-    public ResponseEntity<UserProfileResponseDto> updateWeeklyGoal(@Valid @RequestBody @PathVariable("id") UUID id, Integer weeklyGoal) {
-        return ResponseEntity.ok(service.updateWeeklyGoal(id, weeklyGoal));
+    @PostMapping("/{id}/weeklyGoal")
+    public ResponseEntity<UserProfileResponseDto> updateWeeklyGoal(
+            @PathVariable("id") UUID id,
+            @Valid @RequestBody UserWeeklyGoalRequestDto data
+    ) {
+        return ResponseEntity.ok(service.updateWeeklyGoal(id, data));
     }
-
-//    @GetMapping("/{id}/weeklyGoal")
-//    public ResponseEntity
-
 }

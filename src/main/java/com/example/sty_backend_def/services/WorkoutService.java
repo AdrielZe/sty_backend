@@ -7,7 +7,6 @@ import com.example.sty_backend_def.domains.models.workout.WorkoutRequestDto;
 import com.example.sty_backend_def.domains.models.workout.WorkoutResponseDto;
 import com.example.sty_backend_def.repositories.UserRepository;
 import com.example.sty_backend_def.repositories.WorkoutRepository;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,7 +23,7 @@ public class WorkoutService {
         this.userRepository = userRepository;
     }
 
-    public String createWorkout(WorkoutRequestDto workout) {
+    public WorkoutResponseDto createWorkout(WorkoutRequestDto workout) {
         User userReference = userRepository.getReferenceById(workout.userId());
 
         Workout workoutToSave = workoutRepository.findById(workout.workoutId())
@@ -52,55 +51,43 @@ public class WorkoutService {
 
         workoutRepository.save(workoutToSave);
 
-        return workout.workoutName();
+        return toWorkoutResponseDto(workoutToSave);
     }
 
     public List<WorkoutResponseDto> createWorkouts(List<WorkoutRequestDto> data) {
         List<Workout> workouts = data.stream().map(workout -> {
-                    User userReference = userRepository.getReferenceById(workout.userId());
+            User userReference = userRepository.getReferenceById(workout.userId());
 
-                    Workout workoutToSave = Workout.builder()
-                            .id(workout.workoutId())
-                            .user(userReference)
-                            .name(workout.workoutName())
-                            .dayOfWeek(workout.dayOfWeek())
-                            .exerciseList(workout.exercises())
-                            .build();
+            Workout workoutToSave = Workout.builder()
+                    .id(workout.workoutId())
+                    .user(userReference)
+                    .name(workout.workoutName())
+                    .dayOfWeek(workout.dayOfWeek())
+                    .exerciseList(workout.exercises())
+                    .build();
 
-                    List<Exercise> exercises = workoutToSave.getExerciseList();
+            List<Exercise> exercises = workoutToSave.getExerciseList();
 
-                    if (!exercises.isEmpty()) {
-                        exercises.forEach(exercise -> exercise.setWorkout(workoutToSave));
-                    } else {
-                        throw new RuntimeException("exercises are null");
-                    }
+            if (!exercises.isEmpty()) {
+                exercises.forEach(exercise -> exercise.setWorkout(workoutToSave));
+            } else {
+                throw new RuntimeException("exercises are null");
+            }
 
-                    workoutToSave.setExerciseList(exercises);
-                    return workoutToSave;
-                }
+            workoutToSave.setExerciseList(exercises);
+            return workoutToSave;
+        }
         ).toList();
 
         workoutRepository.saveAll(workouts);
-        return workouts.stream().map(workout ->
-                WorkoutResponseDto.builder()
-                        .workoutId(workout.getId())
-                        .userId(workout.getUser().getId())
-                        .workoutName(workout.getName()).build()
-        ).toList();
+        return workouts.stream().map(this::toWorkoutResponseDto).toList();
     }
-
 
     public WorkoutResponseDto getWorkout(UUID workoutId) {
         Workout workout = workoutRepository.findById(workoutId)
                 .orElseThrow(() -> new RuntimeException("Workout doesn't exist"));
 
-            return WorkoutResponseDto.builder()
-                    .workoutId(workout.getId())
-                    .userId(workout.getUser().getId())
-                    .workoutName(workout.getName())
-                    .dayOfWeek(workout.getDayOfWeek())
-                    .exercises(workout.getExerciseList())
-                    .build();
+        return toWorkoutResponseDto(workout);
     }
 
     public List<WorkoutResponseDto> getUserWorkouts(UUID userId) {
@@ -110,33 +97,14 @@ public class WorkoutService {
             throw new RuntimeException("User doesn't have any workouts");
         }
 
-        System.out.println(workouts);
-        System.out.println(workouts.stream());
-
-        return workouts.stream().map(workout -> new WorkoutResponseDto(
-                workout.getId(),
-                workout.getUser().getId(),
-                workout.getName(),
-                workout.getDayOfWeek(),
-                workout.getExerciseList()
-        )).toList();
-
+        return workouts.stream().map(this::toWorkoutResponseDto).toList();
     }
 
     public List<WorkoutResponseDto> getUserWorkoutsByDay(UUID userId, String dayOfWeek) {
         List<Workout> workouts = workoutRepository.findAllByUserIdAndDayOfWeek(userId, dayOfWeek);
 
         if (!workouts.isEmpty()) {
-            return workouts.stream().map(workout ->
-                    new WorkoutResponseDto(
-                            workout.getId(),
-                            workout.getUser().getId(),
-                            workout.getName(),
-                            workout.getDayOfWeek(),
-                            workout.getExerciseList()
-                    )
-
-            ).toList();
+            return workouts.stream().map(this::toWorkoutResponseDto).toList();
         } else {
             throw new RuntimeException("User doesn't have any workout for this day");
         }
@@ -148,6 +116,16 @@ public class WorkoutService {
         } else {
             System.out.println("Workout not found. It was already deleted.");
         }
+    }
+
+    private WorkoutResponseDto toWorkoutResponseDto(Workout workout) {
+        return WorkoutResponseDto.builder()
+                .workoutName(workout.getName())
+                .workoutId(workout.getId())
+                .dayOfWeek(workout.getDayOfWeek())
+                .exercises(workout.getExerciseList())
+                .userId(workout.getUser().getId())
+                .build();
     }
 
 }

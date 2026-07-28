@@ -29,7 +29,7 @@ public class UserService {
     }
 
     @Transactional
-    public String uploadUserPicture(UUID userId, MultipartFile file) throws IOException {
+    public PictureResponseDto uploadUserPicture(UUID userId, MultipartFile file) throws IOException {
         User user = searchUser(userId);
         validateImageFile(file);
         deleteImageIfExisting(user);
@@ -49,7 +49,7 @@ public class UserService {
 
         repository.save(user);
 
-        return url;
+        return new PictureResponseDto(url);
     }
 
     public UserProfileResponseDto getUserProfile(UUID id) {
@@ -80,10 +80,10 @@ public class UserService {
     }
 
     @Transactional
-    public UserProfileResponseDto updateWeeklyGoal(UUID userId, Integer weeklyGoal) {
+    public UserProfileResponseDto updateWeeklyGoal(UUID userId, UserWeeklyGoalRequestDto data) {
         User user = searchUser(userId);
 
-        user.setWeeklyGoal(weeklyGoal);
+        user.setWeeklyGoal(data.weeklyGoal());
 
         repository.save(user);
 
@@ -121,6 +121,7 @@ public class UserService {
 
     private UserProfileResponseDto toProfileDto(User user) {
         return UserProfileResponseDto.builder()
+                .id(user.getId())
                 .username(user.getUsername())
                 .weeklyGoal(user.getWeeklyGoal())
                 .picture(user.getProfilePicture())
